@@ -1,6 +1,12 @@
 <?php
 require '../config/koneksi.php';
 
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../index.php?pesan=akses_ditolak"); // Jika di edit.php, ganti ../index.php menjadi index.php
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_buku    = $_POST['id_buku'] ?? 0;
     $judul_buku = trim($_POST['judul_buku']);

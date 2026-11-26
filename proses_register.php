@@ -25,7 +25,7 @@ if ($cek->fetch()) {
     exit;
 }
 
-// Hash nomor_induk sesuai standar kode proyek kamu
+// Hash nomor_induk sesuai standar kode 
 $hash = password_hash($nomor_induk, PASSWORD_DEFAULT);
 
 try {

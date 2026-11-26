@@ -1,5 +1,14 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 require 'config/koneksi.php';
+
+$role = $_SESSION['role']; // 'admin' (Guru) atau 'anggota' (Siswa)
+$nama_user = $_SESSION['nama'];
 
 $buku = $pdo->query("SELECT * FROM buku ORDER BY id_buku DESC")->fetchAll(PDO::FETCH_ASSOC);
 $buku_tersedia = $pdo->query("SELECT * FROM buku WHERE status = 'Tersedia' ORDER BY judul_buku ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -21,12 +30,13 @@ $riwayat_kembali = $pdo->query("
 
 $pesan = $_GET['pesan'] ?? '';
 $daftar_pesan = [
-    'tambah_ok'  => 'Buku berhasil ditambahkan.',
-    'ubah_ok'    => 'Data buku berhasil diperbarui.',
-    'hapus_ok'   => 'Buku berhasil dihapus.',
-    'pinjam_ok'  => 'Peminjaman buku berhasil dicatat.',
-    'kembali_ok' => 'Buku berhasil dikembalikan.',
-    'gagal'      => 'Operasi gagal. Pastikan semua data terisi dengan benar.'
+    'tambah_ok'     => 'Buku berhasil ditambahkan.',
+    'ubah_ok'       => 'Data buku berhasil diperbarui.',
+    'hapus_ok'      => 'Buku berhasil dihapus.',
+    'pinjam_ok'     => 'Peminjaman buku berhasil dicatat.',
+    'kembali_ok'    => 'Buku berhasil dikembalikan.',
+    'akses_ditolak' => 'Akses ditolak! Anda tidak memiliki izin untuk tindakan tersebut.',
+    'gagal'         => 'Operasi gagal. Pastikan semua data terisi dengan benar.'
 ];
 ?>
 <!DOCTYPE html>
@@ -39,14 +49,24 @@ $daftar_pesan = [
 </head>
 <body>
 <div class="container">
-    <h1>Perpustakaan Skomda</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h1 style="margin: 0;">Perpustakaan Skomda</h1>
+        <div>
+            <span style="font-size: 14px; margin-right: 10px;">
+                Halo, <strong><?= htmlspecialchars($nama_user) ?></strong> (<?= $role === 'admin' ? 'Guru' : 'Siswa' ?>)
+            </span>
+            <a href="logout.php" class="btn btn-hapus">Logout</a>
+        </div>
+    </div>
 
     <?php if (isset($daftar_pesan[$pesan])): ?>
-        <div class="box" style="background: <?= $pesan === 'gagal' ? '#fde8e8' : '#e8f5e9' ?>; border-color: <?= $pesan === 'gagal' ? '#a61b1b' : '#2e7d32' ?>;">
+        <div class="box" style="background: <?= ($pesan === 'gagal' || $pesan === 'akses_ditolak') ? '#fde8e8' : '#e8f5e9' ?>; border-color: <?= ($pesan === 'gagal' || $pesan === 'akses_ditolak') ? '#a61b1b' : '#2e7d32' ?>;">
             <strong><?= htmlspecialchars($daftar_pesan[$pesan]) ?></strong>
         </div>
     <?php endif; ?>
 
+    <!-- HAK AKSES GURU (ADMIN): TAMBAH, EDIT, HAPUS BUKU -->
+    <?php if ($role === 'admin'): ?>
     <div class="box">
         <h2>1. Tambah Buku</h2>
         <form action="proses/tambah_buku.php" method="POST">
@@ -97,13 +117,16 @@ $daftar_pesan = [
             <?php endforeach; ?>
         </table>
     </div>
+    <?php endif; ?>
 
+    <!-- HAK AKSES SISWA (ANGGOTA): PINJAM BUKU -->
+    <?php if ($role === 'anggota'): ?>
     <div class="box">
-        <h2>2. Pinjam Buku</h2>
+        <h2>Pinjam Buku</h2>
         <form action="proses/pinjam.php" method="POST">
             <div class="field">
                 <label>Nama Siswa</label>
-                <input type="text" name="nama_siswa" required>
+                <input type="text" name="nama_siswa" value="<?= htmlspecialchars($nama_user) ?>" readonly required>
             </div>
             <div class="field">
                 <label>Buku</label>
@@ -138,9 +161,12 @@ $daftar_pesan = [
             <?php endforeach; ?>
         </table>
     </div>
+    <?php endif; ?>
 
+    <!-- HAK AKSES GURU (ADMIN): KEMBALIKAN BUKU -->
+    <?php if ($role === 'admin'): ?>
     <div class="box">
-        <h2>3. Kembalikan Buku</h2>
+        <h2>2. Kembalikan Buku</h2>
         <form action="proses/kembali.php" method="POST">
             <div class="field">
                 <label>Pilih Peminjaman</label>
@@ -179,6 +205,7 @@ $daftar_pesan = [
             <?php endforeach; ?>
         </table>
     </div>
+    <?php endif; ?>
 </div>
 </body>
 </html>

@@ -1,6 +1,12 @@
 <?php
 require '../config/koneksi.php';
 
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../index.php?pesan=akses_ditolak"); // Jika di edit.php, ganti ../index.php menjadi index.php
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_pinjam   = $_POST['id_pinjam'] ?? 0;
     $tgl_kembali = trim($_POST['tgl_kembali']);

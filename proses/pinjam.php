@@ -1,6 +1,11 @@
 <?php
 require '../config/koneksi.php';
 
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'anggota') {
+    header("Location: ../index.php?pesan=akses_ditolak");
+    exit;
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_siswa = trim($_POST['nama_siswa']);
     $id_buku    = $_POST['id_buku'];
