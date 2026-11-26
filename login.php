@@ -18,10 +18,9 @@ $error = $_GET['error'] ?? '';
 <body>
 <div class="container">
     <h1>Login Perpustakaan</h1>
-
-    <?php if ($error === 'salah'): ?>
-        <div class="box" style="background:#fde8e8;border-color:#a61b1b;">
-            <strong>Nama atau NIP/NIS salah.</strong>
+<?php if (($_GET['pesan'] ?? '') === 'regis_ok'): ?>
+        <div class="box" style="background:#e8f5e9;border-color:#2e7d32;">
+            <strong>Registrasi berhasil! Silakan masuk menggunakan akunmu.</strong>
         </div>
     <?php endif; ?>
 
@@ -43,6 +42,7 @@ $error = $_GET['error'] ?? '';
                 <input type="text" name="nomor_induk" required>
             </div>
             <button type="submit">Masuk</button>
+            <a href="register.php" class="btn btn-edit" style="margin-left: 6px;">Daftar Akun</a>
         </form>
     </div>
 </div>
